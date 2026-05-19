@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AvaliaAI — Avaliação Mercadológica com IA</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue: #185FA5;
+      --blue-light: #E6F1FB;
+      --blue-mid: #B5D4F4;
+      --blue-dark: #0C447C;
+      --green: #1D9E75;
+      --green-light: #E1F5EE;
+      --red: #E24B4A;
+      --gray-50: #F8F8F6;
+      --gray-100: #F1EFE8;
+      --gray-200: #D3D1C7;
+      --gray-600: #5F5E5A;
+      --gray-900: #2C2C2A;
+      --border: rgba(0,0,0,0.1);
+      --radius: 10px;
+      --radius-lg: 16px;
+      --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--gray-50);
+      color: var(--gray-900);
+      min-height: 100vh;
+      padding: 0;
+    }
+
+    /* HEADER */
+    .topbar {
+      background: #fff;
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      height: 60px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .logo { display: flex; align-items: center; gap: 10px; }
+    .logo-icon {
+      width: 32px; height: 32px;
+      background: var(--blue);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .logo-icon svg { width: 18px; height: 18px; stroke: #fff; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .logo-name { font-family: 'DM Serif Display', serif; font-size: 20px; letter-spacing: -0.3px; }
+    .logo-name span { color: var(--blue); }
+    .logo-tag { font-size: 11px; color: var(--gray-600); margin-left: 4px; letter-spacing: 0.5px; text-transform: uppercase; }
+
+    /* MAIN */
+    .main { max-width: 820px; margin: 0 auto; padding: 2rem 1rem 4rem; }
+
+    /* STEPS NAV */
+    .steps-nav {
+      display: flex;
+      justify-content: center;
+      gap: 0;
+      margin-bottom: 2rem;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 6px;
+    }
+    .step-btn {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 20px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--gray-600);
+      cursor: pointer;
+      border: none;
+      background: none;
+      transition: all 0.2s;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .step-btn.active { background: var(--blue); color: #fff; }
+    .step-btn.done { color: var(--green); }
+    .step-num {
+      width: 22px; height: 22px; border-radius: 50%;
+      background: rgba(0,0,0,0.06);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 600;
+    }
+    .step-btn.active .step-num { background: rgba(255,255,255,0.25); color: #fff; }
+    .step-btn.done .step-num { background: var(--green-light); color: var(--green); }
+
+    /* CARD */
+    .card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.75rem;
+      margin-bottom: 1rem;
+      box-shadow: var(--shadow);
+    }
+    .card-title {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--gray-900);
+    }
+    .card-title-icon {
+      width: 28px; height: 28px;
+      background: var(--blue-light);
+      border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .card-title-icon svg { width: 15px; height: 15px; stroke: var(--blue); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+    /* FORM */
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .form-group { display: flex; flex-direction: column; gap: 5px; }
+    .form-group.full { grid-column: 1 / -1; }
+    label { font-size: 13px; font-weight: 500; color: var(--gray-600); }
+    input, select, textarea {
+      width: 100%;
+      padding: 9px 12px;
+      font-size: 14px;
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius);
+      background: #fff;
+      color: var(--gray-900);
+      font-family: 'DM Sans', sans-serif;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      appearance: none;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(24,95,165,0.1);
+    }
+    textarea { resize: vertical; min-height: 80px; }
+    select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%235F5E5A' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 36px;
+    }
+
+    /* PHOTO UPLOAD */
+    .photo-upload {
+      border: 2px dashed var(--gray-200);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      text-align: center;
+      cursor: pointer;
+      background: var(--gray-50);
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .photo-upload:hover { border-color: var(--blue); background: var(--blue-light); }
+    .photo-upload svg { width: 28px; height: 28px; stroke: var(--gray-600); margin-bottom: 6px; display: block; margin: 0 auto 6px; }
+    .photo-upload p { font-size: 13px; color: var(--gray-600); }
+    .photo-upload input[type=file] { display: none; }
+    .photo-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+    .photo-thumb { width: 72px; height: 72px; border-radius: var(--radius); object-fit: cover; border: 1px solid var(--border); }
+
+    /* COMPARAVEL */
+    .comp-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 1.25rem;
+    }
+    .badge {
+      font-size: 11px; font-weight: 600; letter-spacing: 0.4px;
+      padding: 3px 10px; border-radius: 20px;
+      text-transform: uppercase;
+    }
+    .badge-blue { background: var(--blue-light); color: var(--blue); }
+    .remove-btn {
+      background: none; border: none; cursor: pointer;
+      color: var(--gray-600); font-size: 18px; line-height: 1;
+      padding: 4px; border-radius: 6px; transition: color 0.15s, background 0.15s;
+    }
+    .remove-btn:hover { color: var(--red); background: #FCEBEB; }
+
+    /* ACTIONS */
+    .actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 1.25rem; }
+    .btn-primary {
+      background: var(--blue); color: #fff; border: none;
+      padding: 10px 24px; border-radius: var(--radius);
+      font-size: 14px; font-weight: 600; cursor: pointer;
+      display: flex; align-items: center; gap: 8px;
+      font-family: 'DM Sans', sans-serif;
+      transition: background 0.15s, transform 0.1s;
+    }
+    .btn-primary:hover { background: var(--blue-dark); }
+    .btn-primary:active { transform: scale(0.98); }
+    .btn-primary:disabled { background: var(--blue-mid); cursor: not-allowed; }
+    .btn-secondary {
+      background: #fff; border: 1px solid var(--gray-200); color: var(--gray-900);
+      padding: 10px 20px; border-radius: var(--radius);
+      font-size: 14px; font-weight: 500; cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      transition: background 0.15s;
+    }
+    .btn-secondary:hover { background: var(--gray-50); }
+
+    .add-btn {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 13px; font-weight: 500; color: var(--blue); cursor: pointer;
+      background: var(--blue-light); border: 1px solid var(--blue-mid);
+      border-radius: var(--radius); padding: 8px 16px;
+      font-family: 'DM Sans', sans-serif;
+      transition: background 0.15s;
+    }
+    .add-btn:hover { background: var(--blue-mid); }
+
+    .comp-meta { display: flex; align-items: center; gap: 10px; margin-bottom: 1rem; font-size: 13px; color: var(--gray-600); }
+
+    /* LOADING */
+    .spinner {
+      width: 44px; height: 44px;
+      border: 3px solid var(--gray-100);
+      border-top-color: var(--blue);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 1rem;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* RESULT */
+    .result-header {
+      text-align: center; padding: 1.75rem;
+      background: linear-gradient(135deg, var(--blue-light) 0%, var(--green-light) 100%);
+      border-radius: var(--radius-lg);
+      margin-bottom: 1rem;
+      border: 1px solid var(--blue-mid);
+    }
+    .result-header h2 { font-family: 'DM Serif Display', serif; font-size: 20px; margin-bottom: 4px; }
+    .result-header p { font-size: 13px; color: var(--gray-600); }
+
+    .price-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 1rem; }
+    .price-card {
+      background: #fff; border: 1px solid var(--border);
+      border-radius: var(--radius-lg); padding: 1rem; text-align: center;
+      box-shadow: var(--shadow);
+    }
+    .price-card label { font-size: 12px; color: var(--gray-600); display: block; margin-bottom: 4px; font-weight: 500; }
+    .price-card .val { font-size: 18px; font-weight: 600; }
+    .price-card.highlight { border: 2px solid var(--blue); background: var(--blue-light); }
+    .price-card.highlight .val { color: var(--blue); }
+
+    .report-box {
+      background: var(--gray-50);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      font-size: 14px; line-height: 1.85;
+      white-space: pre-wrap;
+      color: var(--gray-900);
+      max-height: 500px;
+      overflow-y: auto;
+    }
+
+    .hidden { display: none !important; }
+
+    /* FOOTER */
+    .footer { text-align: center; font-size: 12px; color: var(--gray-600); margin-top: 3rem; }
+
+    @media (max-width: 600px) {
+      .form-grid { grid-template-columns: 1fr; }
+      .price-grid { grid-template-columns: 1fr; }
+      .step-btn span { display: none; }
+      .topbar { padding: 0 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <div class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    </div>
+    <span class="logo-name">Avalia<span>AI</span></span>
+    <span class="logo-tag">Avaliação Mercadológica</span>
+  </div>
+</header>
+
+<main class="main">
+
+  <!-- STEPS NAV -->
+  <nav class="steps-nav" id="stepsNav">
+    <button class="step-btn active" data-step="1" onclick="goStep(1)">
+      <span class="step-num" id="sn1">1</span>
+      <span>Imóvel avaliado</span>
+    </button>
+    <button class="step-btn" data-step="2" onclick="goStep(2)">
+      <span class="step-num" id="sn2">2</span>
+      <span>Comparáveis</span>
+    </button>
+    <button class="step-btn" data-step="3" onclick="goStep(3)">
+      <span class="step-num" id="sn3">3</span>
+      <span>Análise IA</span>
+    </button>
+  </nav>
+
+  <!-- STEP 1 -->
+  <div id="step1">
+    <div class="card">
+      <div class="card-title">
+        <div class="card-title-icon">
+          <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        </div>
+        Dados do imóvel avaliado
+      </div>
+      <div class="form-grid">
+        <div class="form-group full">
+          <label>Endereço completo</label>
+          <input type="text" id="end_av" placeholder="Rua, número, bairro, cidade" />
+        </div>
+        <div class="form-group">
+          <label>Tipo de imóvel</label>
+          <select id="tipo_av">
+            <option value="">Selecione</option>
+            <option>Apartamento</option><option>Casa</option>
+            <option>Casa em condomínio</option><option>Terreno</option><option>Comercial</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Finalidade</label>
+          <select id="fin_av">
+            <option value="">Selecione</option>
+            <option>Venda</option><option>Locação</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Área total (m²)</label>
+          <input type="number" id="area_av" placeholder="Ex: 85" />
+        </div>
+        <div class="form-group">
+          <label>Área construída (m²)</label>
+          <input type="number" id="areac_av" placeholder="Ex: 70" />
+        </div>
+        <div class="form-group">
+          <label>Quartos</label>
+          <select id="qts_av"><option value="">Selecione</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5+</option></select>
+        </div>
+        <div class="form-group">
+          <label>Suítes</label>
+          <select id="sui_av"><option value="">Selecione</option><option>0</option><option>1</option><option>2</option><option>3</option><option>4+</option></select>
+        </div>
+        <div class="form-group">
+          <label>Banheiros</label>
+          <select id="ban_av"><option value="">Selecione</option><option>1</option><option>2</option><option>3</option><option>4+</option></select>
+        </div>
+        <div class="form-group">
+          <label>Vagas de garagem</label>
+          <select id="vag_av"><option value="">Selecione</option><option>0</option><option>1</option><option>2</option><option>3</option><option>4+</option></select>
+        </div>
+        <div class="form-group">
+          <label>Padrão de acabamento</label>
+          <select id="pad_av"><option value="">Selecione</option><option>Simples</option><option>Médio</option><option>Alto</option><option>Luxo</option></select>
+        </div>
+        <div class="form-group">
+          <label>Estado de conservação</label>
+          <select id="con_av"><option value="">Selecione</option><option>Novo</option><option>Ótimo</option><option>Bom</option><option>Regular</option><option>Precisa reforma</option></select>
+        </div>
+        <div class="form-group">
+          <label>Andar (se apartamento)</label>
+          <input type="text" id="and_av" placeholder="Ex: 5º / Térreo" />
+        </div>
+        <div class="form-group">
+          <label>Posição solar</label>
+          <select id="sol_av"><option value="">Selecione</option><option>Nascente</option><option>Poente</option><option>Norte</option><option>Sul</option></select>
+        </div>
+        <div class="form-group full">
+          <label>Diferenciais / Observações</label>
+          <textarea id="obs_av" placeholder="Piscina, churrasqueira, vista privilegiada, reformas recentes, infraestrutura do condomínio..."></textarea>
+        </div>
+        <div class="form-group full">
+          <label>Fotos do imóvel</label>
+          <div class="photo-upload" onclick="document.getElementById('fotos_av').click()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            <p>Clique para adicionar fotos do imóvel</p>
+            <input type="file" id="fotos_av" multiple accept="image/*" onchange="previewFotos(this,'prev_av')" />
+          </div>
+          <div class="photo-grid" id="prev_av"></div>
+        </div>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn-primary" onclick="goStep(2)">
+        Próximo: Comparáveis
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- STEP 2 -->
+  <div id="step2" class="hidden">
+    <div id="comps-container"></div>
+    <div class="comp-meta">
+      <button class="add-btn" id="add-btn" onclick="addComp()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+        Adicionar comparável
+      </button>
+      <span id="comp-count">0 de 3 adicionados</span>
+    </div>
+    <div class="actions">
+      <button class="btn-secondary" onclick="goStep(1)">Voltar</button>
+      <button class="btn-primary" id="analisar-btn" onclick="analisar()" disabled>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+        Gerar análise com IA
+      </button>
+    </div>
+  </div>
+
+  <!-- STEP 3 -->
+  <div id="step3" class="hidden">
+    <!-- Loading -->
+    <div id="loading-state" class="card" style="text-align:center; padding:3rem; display:none;">
+      <div class="spinner"></div>
+      <p style="font-size:14px; color:var(--gray-600);">Analisando imóveis com inteligência artificial...</p>
+      <p style="font-size:12px; color:var(--gray-600); margin-top:6px;">Isso pode levar alguns segundos</p>
+    </div>
+
+    <!-- Result -->
+    <div id="result-state" class="hidden">
+      <div class="result-header">
+        <p style="font-size:12px; text-transform:uppercase; letter-spacing:0.8px; font-weight:600; color:var(--blue); margin-bottom:6px;">Avaliação mercadológica</p>
+        <h2 id="res-end">Imóvel avaliado</h2>
+        <p id="res-sub">Análise gerada por IA com base nos comparáveis inseridos</p>
+      </div>
+
+      <div class="price-grid" id="price-grid"></div>
+
+      <div class="card">
+        <div class="card-title">
+          <div class="card-title-icon">
+            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          </div>
+          Relatório completo de avaliação
+        </div>
+        <div class="report-box" id="report-box"></div>
+      </div>
+
+      <div class="actions">
+        <button class="btn-secondary" onclick="goStep(2)">Ajustar dados</button>
+        <button class="btn-primary" onclick="copyReport()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          Copiar relatório
+        </button>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer class="footer">
+  <p>AvaliaAI &mdash; Ferramenta de apoio à avaliação mercadológica para corretores de imóveis</p>
+</footer>
+
+<script>
+  let compCount = 0;
+  const MAX_COMP = 3;
+
+  function previewFotos(input, containerId) {
+    const c = document.getElementById(containerId);
+    c.innerHTML = '';
+    Array.from(input.files).slice(0, 8).forEach(f => {
+      const img = document.createElement('img');
+      img.className = 'photo-thumb';
+      img.src = URL.createObjectURL(f);
+      c.appendChild(img);
+    });
+  }
+
+  function goStep(n) {
+    [1,2,3].forEach(i => {
+      document.getElementById('step'+i).classList.toggle('hidden', i !== n);
+      const btn = document.querySelector(`[data-step="${i}"]`);
+      btn.classList.toggle('active', i === n);
+      btn.classList.toggle('done', i < n);
+      const sn = document.getElementById('sn'+i);
+      sn.textContent = i < n ? '✓' : i;
+    });
+  }
+
+  function gv(id) { const el = document.getElementById(id); return el ? el.value : ''; }
+
+  function addComp() {
+    if (compCount >= MAX_COMP) return;
+    compCount++;
+    const n = compCount;
+    const div = document.createElement('div');
+    div.className = 'card';
+    div.id = 'comp-' + n;
+    div.innerHTML = `
+      <div class="comp-header">
+        <div class="card-title" style="margin:0">
+          <div class="card-title-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          </div>
+          Comparável ${n}
+          <span class="badge badge-blue">Comparável</span>
+        </div>
+        <button class="remove-btn" onclick="removeComp(${n})">✕</button>
+      </div>
+      <div class="form-grid">
+        <div class="form-group full"><label>Endereço / Localização</label><input type="text" id="c${n}_end" placeholder="Rua, bairro ou referência de localização" /></div>
+        <div class="form-group"><label>Tipo de imóvel</label><select id="c${n}_tipo"><option value="">Selecione</option><option>Apartamento</option><option>Casa</option><option>Casa em condomínio</option><option>Terreno</option><option>Comercial</option></select></div>
+        <div class="form-group"><label>Preço anunciado (R$)</label><input type="text" id="c${n}_preco" placeholder="Ex: 450.000" oninput="fmtPrice(this)" /></div>
+        <div class="form-group"><label>Área total (m²)</label><input type="number" id="c${n}_area" placeholder="Ex: 80" /></div>
+        <div class="form-group"><label>Quartos</label><select id="c${n}_qts"><option value="">Selecione</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5+</option></select></div>
+        <div class="form-group"><label>Suítes</label><select id="c${n}_sui"><option value="">Selecione</option><option>0</option><option>1</option><option>2</option><option>3</option><option>4+</option></select></div>
+        <div class="form-group"><label>Banheiros</label><select id="c${n}_ban"><option value="">Selecione</option><option>1</option><option>2</option><option>3</option><option>4+</option></select></div>
+        <div class="form-group"><label>Vagas de garagem</label><select id="c${n}_vag"><option value="">Selecione</option><option>0</option><option>1</option><option>2</option><option>3</option><option>4+</option></select></div>
+        <div class="form-group"><label>Padrão de acabamento</label><select id="c${n}_pad"><option value="">Selecione</option><option>Simples</option><option>Médio</option><option>Alto</option><option>Luxo</option></select></div>
+        <div class="form-group"><label>Estado de conservação</label><select id="c${n}_con"><option value="">Selecione</option><option>Novo</option><option>Ótimo</option><option>Bom</option><option>Regular</option><option>Precisa reforma</option></select></div>
+        <div class="form-group"><label>Tempo no mercado</label><select id="c${n}_tmp"><option value="">Selecione</option><option>Recém anunciado</option><option>1 a 3 meses</option><option>3 a 6 meses</option><option>Mais de 6 meses</option></select></div>
+        <div class="form-group"><label>Fonte da informação</label><select id="c${n}_fte"><option value="">Selecione</option><option>Zap Imóveis</option><option>Viva Real</option><option>OLX</option><option>Imobiliária</option><option>Proprietário</option><option>Outro</option></select></div>
+        <div class="form-group full"><label>Observações</label><textarea id="c${n}_obs" placeholder="Diferenciais, reformas recentes, informações extras..."></textarea></div>
+        <div class="form-group full">
+          <label>Fotos do comparável</label>
+          <div class="photo-upload" onclick="document.getElementById('c${n}_fotos').click()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:24px;height:24px;margin:0 auto 6px;display:block"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            <p>Clique para adicionar fotos</p>
+            <input type="file" id="c${n}_fotos" multiple accept="image/*" onchange="previewFotos(this,'prev_c${n}')" />
+          </div>
+          <div class="photo-grid" id="prev_c${n}"></div>
+        </div>
+      </div>
+    `;
+    document.getElementById('comps-container').appendChild(div);
+    updateCompUI();
+  }
+
+  function removeComp(n) {
+    const el = document.getElementById('comp-' + n);
+    if (el) el.remove();
+    compCount = document.querySelectorAll('#comps-container .card').length;
+    updateCompUI();
+  }
+
+  function updateCompUI() {
+    const count = document.querySelectorAll('#comps-container .card').length;
+    document.getElementById('comp-count').textContent = count + ' de ' + MAX_COMP + ' adicionados';
+    document.getElementById('add-btn').style.display = count >= MAX_COMP ? 'none' : 'flex';
+    document.getElementById('analisar-btn').disabled = count === 0;
+  }
+
+  function fmtPrice(input) {
+    let v = input.value.replace(/\D/g,'');
+    if (v) v = parseInt(v).toLocaleString('pt-BR');
+    input.value = v;
+  }
+
+  function buildPrompt() {
+    let p = `Você é um especialista em avaliação mercadológica de imóveis no Brasil com mais de 20 anos de experiência. Analise os dados abaixo e gere um relatório profissional completo em português.
+
+=== IMÓVEL AVALIADO ===
+Endereço: ${gv('end_av')}
+Tipo: ${gv('tipo_av')} | Finalidade: ${gv('fin_av')}
+Área total: ${gv('area_av')} m² | Área construída: ${gv('areac_av')} m²
+Quartos: ${gv('qts_av')} | Suítes: ${gv('sui_av')} | Banheiros: ${gv('ban_av')} | Vagas: ${gv('vag_av')}
+Padrão: ${gv('pad_av')} | Conservação: ${gv('con_av')}
+Andar: ${gv('and_av')} | Posição solar: ${gv('sol_av')}
+Diferenciais: ${gv('obs_av')}
+
+`;
+    document.querySelectorAll('#comps-container .card').forEach((card, i) => {
+      const n = card.id.replace('comp-','');
+      p += `=== IMÓVEL COMPARÁVEL ${i+1} ===
+Endereço: ${gv('c'+n+'_end')}
+Tipo: ${gv('c'+n+'_tipo')} | Preço: R$ ${gv('c'+n+'_preco')}
+Área: ${gv('c'+n+'_area')} m²
+Quartos: ${gv('c'+n+'_qts')} | Suítes: ${gv('c'+n+'_sui')} | Banheiros: ${gv('c'+n+'_ban')} | Vagas: ${gv('c'+n+'_vag')}
+Padrão: ${gv('c'+n+'_pad')} | Conservação: ${gv('c'+n+'_con')}
+Tempo no mercado: ${gv('c'+n+'_tmp')} | Fonte: ${gv('c'+n+'_fte')}
+Obs: ${gv('c'+n+'_obs')}
+
+`;
+    });
+
+    p += `Gere um relatório de avaliação mercadológica profissional contendo exatamente estas seções:
+
+1. FAIXA DE PREÇO SUGERIDA
+Indique claramente:
+- Preço mínimo sugerido: R$ [valor]
+- Preço médio sugerido: R$ [valor]
+- Preço máximo sugerido: R$ [valor]
+- Valor por m² estimado: R$ [valor]/m²
+
+2. ANÁLISE COMPARATIVA
+Compare o imóvel avaliado com cada comparável apresentado.
+
+3. FATORES DE VALORIZAÇÃO
+Liste os pontos positivos que valorizam o imóvel avaliado.
+
+4. FATORES DE DEPRECIAÇÃO
+Liste os pontos que podem depreciar ou dificultar a negociação.
+
+5. POSICIONAMENTO DE MERCADO
+Como o imóvel se posiciona no mercado local e recomendação de estratégia de precificação.
+
+6. CONCLUSÃO E RECOMENDAÇÃO
+Recomendação final como especialista.
+
+Use linguagem técnica e profissional adequada para um relatório imobiliário formal.`;
+    return p;
+  }
+
+  async function analisar() {
+    goStep(3);
+    document.getElementById('loading-state').style.display = 'block';
+    document.getElementById('result-state').classList.add('hidden');
+
+    try {
+      const resp = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1000,
+          messages: [{ role: 'user', content: buildPrompt() }]
+        })
+      });
+      const data = await resp.json();
+      const text = data.content.map(b => b.text || '').join('');
+
+      document.getElementById('loading-state').style.display = 'none';
+      document.getElementById('result-state').classList.remove('hidden');
+      document.getElementById('res-end').textContent = gv('end_av') || 'Imóvel avaliado';
+
+      const minM = text.match(/[Mm]ínimo[^R\n]*R\$\s*([\d.,]+)/);
+      const medM = text.match(/[Mm]édio[^R\n]*R\$\s*([\d.,]+)/);
+      const maxM = text.match(/[Mm]áximo[^R\n]*R\$\s*([\d.,]+)/);
+      const m2M  = text.match(/m²[^R\n]*R\$\s*([\d.,]+)|R\$\s*([\d.,]+)\s*\/\s*m²/);
+
+      document.getElementById('price-grid').innerHTML = `
+        <div class="price-card"><label>Preço mínimo</label><div class="val" style="color:var(--green)">${minM ? 'R$ '+minM[1] : '—'}</div></div>
+        <div class="price-card highlight"><label>Preço médio recomendado</label><div class="val">` + (medM ? 'R$ '+medM[1] : '—') + `</div></div>
+        <div class="price-card"><label>Preço máximo</label><div class="val" style="color:var(--blue)">${maxM ? 'R$ '+maxM[1] : '—'}</div></div>
+      `;
+      document.getElementById('report-box').textContent = text;
+
+    } catch(e) {
+      document.getElementById('loading-state').style.display = 'none';
+      document.getElementById('result-state').classList.remove('hidden');
+      document.getElementById('report-box').textContent = 'Erro ao conectar com a IA. Verifique sua conexão e tente novamente.\n\nDetalhe: ' + e.message;
+    }
+  }
+
+  function copyReport() {
+    const text = document.getElementById('report-box').textContent;
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = event.target.closest('button');
+      const orig = btn.innerHTML;
+      btn.innerHTML = '✓ Copiado!';
+      setTimeout(() => btn.innerHTML = orig, 2000);
+    });
+  }
+</script>
+</body>
+</html>
